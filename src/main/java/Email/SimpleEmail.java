@@ -8,7 +8,7 @@ import javax.mail.Session;
 
 public class SimpleEmail {
 
-	public static void sendmail(String recieverMail,String subject,String body) {
+	public static Boolean sendmail(String recieverMail,String subject,String body) {
 		final String fromEmail = "syedfaizan824@gmail.com"; //requires valid gmail id
 		final String password = "9890278513"; // correct password for gmail id
 		final String toEmail = recieverMail; // can be any email id
@@ -29,7 +29,7 @@ public class SimpleEmail {
 		};
 		Session session = Session.getInstance(props, auth);
 		
-		TLSEmail.sendEmail(session, toEmail,subject, body);
+		return TLSEmail.sendEmail(session, toEmail,subject, body);
 		
 	}
 

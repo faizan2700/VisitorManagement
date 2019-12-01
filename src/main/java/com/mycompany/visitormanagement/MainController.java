@@ -21,6 +21,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.Tab;
@@ -31,6 +32,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
 
 /**
  * FXML Controller class
@@ -77,8 +79,6 @@ public class MainController implements Initializable {
     @FXML
     private JFXTextField visitorEmail;
     @FXML
-    private JFXTextField checkInTime;
-    @FXML
     private JFXTextField hostName;
     @FXML
     private JFXTextField hostLocation;
@@ -89,11 +89,12 @@ public class MainController implements Initializable {
     @FXML
     private StackPane stackpane;
     
-    databaseHandler databasehandler;
+    
     //list for filling table
-    ObservableList<Visitor> list = FXCollections.observableArrayList();
+    
     @FXML
     private Tab visitorPane1;
+
     @FXML
     private AnchorPane visitor1;
     @FXML
@@ -103,8 +104,6 @@ public class MainController implements Initializable {
     @FXML
     private JFXTextField visitorEmail1;
     @FXML
-    private JFXTextField checkInTime1;
-    @FXML
     private JFXTextField hostName1;
     @FXML
     private JFXTextField hostLocation1;
@@ -112,12 +111,37 @@ public class MainController implements Initializable {
     private JFXButton checkoutButton;
     @FXML
     private JFXButton cancelButton1;
+    
+
+    @FXML
+    private TableView<Visitor> tableView1;
+    
+    databaseHandler databasehandler;
+    ObservableList<Visitor> list = FXCollections.observableArrayList();//this shows the list of current visitors
+    ObservableList<Visitor> list1 = FXCollections.observableArrayList();//this shows the record of previous visitor
+    String visitorCheckIn = null;
+    Visitor vis = null;
+    @FXML
+    private TableColumn<Visitor, String> nameCol1;
+    @FXML
+    private TableColumn<Visitor, String> phoneCol1;
+    @FXML
+    private TableColumn<Visitor, String> emailCol1;
+    @FXML
+    private TableColumn<Visitor, String> checkinCol1;
+    @FXML
+    private TableColumn<Visitor, String> checkoutCol1;
+    @FXML
+    private TableColumn<Visitor, String> hostnameCol1;
+    @FXML
+    private TableColumn<Visitor, String> locationCol1;
 
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        databasehandler = new databaseHandler();
+        databasehandler = databaseHandler.getInstance();
         inittable();
+        initRecord();
     }   
     
     //********************CONTROLLER FOR CHECK IN WINDOW ********************//
@@ -136,6 +160,7 @@ public class MainController implements Initializable {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setHeaderText(null);
             alert.setContentText("Please Enter all the fields");
+            styleAlert(alert);
             alert.showAndWait();
             return;
         }
@@ -154,6 +179,7 @@ public class MainController implements Initializable {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setHeaderText(null);
             alert.setContentText("Successfully Added");
+            styleAlert(alert);
             alert.showAndWait();
         }
         else //Error
@@ -161,10 +187,12 @@ public class MainController implements Initializable {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setHeaderText(null);
             alert.setContentText("Failed");
+            styleAlert(alert);
             alert.showAndWait();
         }
         
         loadData();
+        //addInTable(vis);
         emptyfield();
         sendEmailToHost(visName,visPhone,visEmail,host,visLocation);//implemented in helper functins section in this file
     }
@@ -186,6 +214,13 @@ public class MainController implements Initializable {
     
     // **************** CONTROLLER FOR TABLE VIEW *********************//
     
+    
+    private void inittable() {
+        //System.out.println("loading table...now");
+        initCol();
+        loadData();
+    }
+    
     private void initCol(){
         nameCol.setCellValueFactory(new PropertyValueFactory("name"));
         emailCol.setCellValueFactory(new PropertyValueFactory("email"));
@@ -195,14 +230,7 @@ public class MainController implements Initializable {
         hostnameCol.setCellValueFactory(new PropertyValueFactory("hostname"));
     }
     
-    private void inittable() {
-        //System.out.println("loading table...now");
-        initCol();
-        loadData();
-    }
-    
     private void loadData() {
-        
         String qu = "SELECT * FROM VISITOR WHERE checkouttime = checkintime";
         ResultSet rs = databasehandler.execQuery(qu);
         list.clear();
@@ -215,30 +243,29 @@ public class MainController implements Initializable {
                 String location = rs.getString("location");
                 String checkintime = rs.getString("checkintime");
                 //System.out.println("for table " + email);
-                list.add(new Visitor(name,phone,email,checkintime,host,location));
+                list.add(new Visitor(name,phone,email,checkintime,host,location,checkintime));
                 //System.out.println("size of list is : " + list.size());
             }
         }
         
         catch(SQLException e){
+            //e.printStackTrace();
             //Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE,null,e);
             System.out.println("Error in fxmlcontroller loadData() method");
         }
         tableView.getItems().setAll(list);
     }
     
-    @FXML
-    private void handleCancel1(ActionEvent event) {
-        emptyfield1();
+    private void addInTable(Visitor vis){
+        list.add(vis);
+        //tableView.getItems().setAll(list);
     }
     
-    public void emptyfield1(){
-        visitorPhone1.setText("");
-        visitorEmail1.setText("");
-        checkoutName.setText("");
-        hostName1.setText("");
-        hostLocation1.setText("");
+    private void removeFromTable(Visitor vis){
+        list.remove(vis);
+        //tableView.getItems().setAll(list);
     }
+
     
     
     //*********************TABLE VIEW CONTROLLER END****************//
@@ -315,7 +342,10 @@ public class MainController implements Initializable {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setHeaderText(null);
             alert.setContentText("Failed! There are more than one visitors currently present with given information");
+            styleAlert(alert);
             alert.showAndWait();
+            
+            handleCancel(event);
         }
         else if(counter==0){
             //no present visitor have these details
@@ -323,7 +353,10 @@ public class MainController implements Initializable {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setHeaderText(null);
             alert.setContentText("Failed There is no visitor with given information");
+            styleAlert(alert);
             alert.showAndWait();
+            
+            handleCancel(event);
         }
         else if(counter==1){
             checkoutName.setText(name);
@@ -332,23 +365,32 @@ public class MainController implements Initializable {
 
             hostLocation1.setText(location);
             hostName1.setText(host);
-            handleCheckOut(name,phone,email,host,location);
             
-            String checkout = getCurrentTimeUsingCalendar(); 
-            sendEmailToVisitor(name,phone,checkintime,checkout,host,location,email);
+            vis =new  Visitor(name,phone,email,checkintime,host,location,checkintime);
+            //handleCheckOut(name,phone,email,host,location);
         }
     }
+    @FXML
+    private void handleCheckOut(ActionEvent event) {
 
-    public void handleCheckOut(String name,String phone,String email,String host,String location) {
-
-
+        if(vis==null){
+            getDetails(event);
+        }
+        
+        String name = vis.getName();
+        String phone = vis.getPhone();
+        String email = vis.getEmail();
+        String location = vis.getHostlocation();
+        String host = vis.getHostname();
         String time = getCurrentTimeUsingCalendar();
+        
         String qu = "UPDATE VISITOR SET checkouttime = '" + time + "' WHERE name = '" + name + "' AND phone = '" + phone + "' AND email = '" + email + "' AND host = '" + host + "' AND location = '" + location +"' ";
         
         if(databasehandler.execAction(qu)){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setHeaderText(null);
-            alert.setContentText("Successfull Check Out");
+            alert.setContentText("Successfull Check Out at : " + time);
+            styleAlert(alert);
             alert.showAndWait();
             //checkData();
         }
@@ -357,16 +399,95 @@ public class MainController implements Initializable {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setHeaderText(null);
             alert.setContentText("Failed to Check Out");
+            styleAlert(alert);
             alert.showAndWait();
+            handleCancel(event);
+            return;
         }
         //updating table again
-        loadData();
+        
         emptyfield1();
+        loadData();//updating the current visitor list
+        //removeFromTable(vis);//updating the current visitor list;
+        
+        vis.setCheckout(time);
+        addVisitor(vis);//updating record list
+        
+        String checkout = time;
+        sendEmailToVisitor(vis.getName(),vis.getPhone(),vis.getCheckin(),checkout,vis.getHostname(),vis.getHostlocation(),vis.getEmail());
+        
+        vis = null;
+    }
+    
+        @FXML
+    private void handleCancel1(ActionEvent event) {
+        emptyfield1();
+        vis = null;
+    }
+    
+    public void emptyfield1(){
+        visitorPhone1.setText("");
+        visitorEmail1.setText("");
+        checkoutName.setText("");
+        hostName1.setText("");
+        hostLocation1.setText("");
     }
 
     //******************CONTROLLER FOR CHECK OUT ENDS*****************//
     
+    //****************** CONTROLLER FOR RECORD TABLE STARTS*****************//
     
+    
+    private void initRecord(){
+        initCol1();
+        loadRecords();
+    }
+    
+        private void initCol1(){
+        nameCol1.setCellValueFactory(new PropertyValueFactory("name"));
+        emailCol1.setCellValueFactory(new PropertyValueFactory("email"));
+        phoneCol1.setCellValueFactory(new PropertyValueFactory("phone"));
+        locationCol1.setCellValueFactory(new PropertyValueFactory("hostlocation"));
+        checkinCol1.setCellValueFactory(new PropertyValueFactory("checkin"));
+        checkoutCol1.setCellValueFactory(new PropertyValueFactory("checkout"));
+        hostnameCol1.setCellValueFactory(new PropertyValueFactory("hostname"));
+    }
+    
+    private void loadRecords() {
+        
+        String qu = "SELECT * FROM VISITOR WHERE NOT checkouttime = checkintime";
+        ResultSet rs = databasehandler.execQuery(qu);
+        list1.clear();
+        try{
+            while(rs.next()){
+                String name = rs.getString("name");
+                String host = rs.getString("host");
+                String email = rs.getString("email");
+                String phone = rs.getString("phone");
+                String location = rs.getString("location");
+                String checkintime = rs.getString("checkintime");
+                String checkouttime = rs.getString("checkouttime");
+                //System.out.println("for table " + email);
+                list1.add(new Visitor(name,phone,email,checkintime,host,location,checkouttime));
+                //System.out.println("size of list is : " + list.size());
+            }
+        }
+        
+        catch(SQLException e){
+            e.printStackTrace();
+            //Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE,null,e);
+            //System.out.println("Error in fxmlcontroller loadData() method");
+        }
+        tableView1.getItems().setAll(list1);
+    }
+    
+    private void addVisitor(Visitor vis){
+        list1.add(vis);
+        tableView1.getItems().setAll(list1);
+    }
+    
+
+    //******************CONTROLLER FOR RECORD ENDS*****************//
     
     
     //***************HELPER FUNCTIONS AND CLASSES********************//
@@ -376,20 +497,41 @@ public class MainController implements Initializable {
         String body = "Hello " + host + ", \nIt is machine generated Mail to infom you about the visitor who just came to visit you below is the detailed"
                 + " Information. \nName : " + visName + "\nPhone : " + visPhone + " \nEmail : "  + visEmail + "\nWhere to visit : " + location + " \n";
         
-        SimpleEmail.sendmail("syedfaizan824@gmail.com", "Visitor Inormation", body);
+        ;
+        if(SimpleEmail.sendmail("syedfaizan824@gmail.com", "Visitor Inormation", body)){// success do nothing
+
+        }
+        else{
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText(null);
+            alert.setContentText("Email is not sent becauese of some error ( please check your internet connection may be) ");
+            styleAlert(alert);
+            alert.showAndWait();
+        }
     }
     
     public static void sendEmailToVisitor(String name,String phone,String checkin,String checkout, String host, String location, String visEmail){
         String body = "Hello " + name + ", \nIt is machine generated Mail to inform you about the visit. \nName : " + name + " \nPhone : " + phone + " \nCheck-In Time "
                 + ": " + checkin + " \nCheck-Out Time : " + checkout + " \nHost : " + host + "  \nAddress Visited : " + location  + " \n" ;
-        SimpleEmail.sendmail(visEmail, "Your Visit Info", body);
+        if(SimpleEmail.sendmail(visEmail, "Your Visit Info", body)){// success do nothing
+
+        }
+        else{
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText(null);
+            alert.setContentText("Email is not sent becauese of some error ( please check your internet connection may be) ");
+            styleAlert(alert);
+            alert.showAndWait();
+        }
     }
     
     public static String getCurrentTimeUsingCalendar() {
         java.util.Date date = Calendar.getInstance().getTime();  
-        DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss dd-mm-yyyy");  
+        DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss dd-MMMM-yyyy");  
         String strDate = dateFormat.format(date);  
         return strDate;
+        /*Timestamp time = new Timestamp(System.currentTimeMillis());
+        return time;*/
     }
     
     private void checkData(){
@@ -408,25 +550,44 @@ public class MainController implements Initializable {
             System.out.println("Error in fxmlcontroller checkData() method");
         }
     }
+    
+    public static void styleAlert(Alert alert) {
+        Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
 
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add(AlertMaker.class.getResource("/styles/darktheme.css").toExternalForm());
+        dialogPane.getStyleClass().add("custom-alert");
+    }
     public class Visitor{
         private final SimpleStringProperty name;
         private final SimpleStringProperty phone;
         private final SimpleStringProperty email;
         private final SimpleStringProperty checkin;
-        private final SimpleStringProperty checkout;
+        private SimpleStringProperty checkout;
         private final SimpleStringProperty hostname;
         private final SimpleStringProperty hostlocation;
         
-        public Visitor(String name,String phone,String email,String checkin, String hostname,String hostlocation ){
+        
+        /*
+                nameCol1.setCellValueFactory(new PropertyValueFactory("name"));
+        emailCol1.setCellValueFactory(new PropertyValueFactory("email"));
+        phoneCol1.setCellValueFactory(new PropertyValueFactory("phone"));
+        locationCol1.setCellValueFactory(new PropertyValueFactory("hostlocation"));
+        checkinCol1.setCellValueFactory(new PropertyValueFactory("checkin"));
+        checkoutCol1.setCellValueFactory(new PropertyValueFactory("checkout"));
+        hostnameCol1.setCellValueFactory(new PropertyValueFactory("hostname"));
+        */
+        
+        public Visitor(String name,String phone,String email,String checkin, String hostname,String hostlocation,String checkout ){
             this.name = new SimpleStringProperty(name);
             this.phone = new SimpleStringProperty(phone);
             this.email = new SimpleStringProperty(email);
             this.checkin = new SimpleStringProperty(checkin);
+            this.checkout = new SimpleStringProperty(checkout);
             this.hostname = new SimpleStringProperty(hostname);
             this.hostlocation = new SimpleStringProperty(hostlocation);
-            this.checkout = new SimpleStringProperty("-1");
         }
+        
 
         public String getName() {
             return name.get();
@@ -452,9 +613,19 @@ public class MainController implements Initializable {
             return hostlocation.get();
         }
         
+        public String getCheckout(){
+            return checkout.get();
+        }
+        public void setCheckout(String checkouttime){
+            this.checkout = new SimpleStringProperty(checkouttime);
+            return;
+        }
+        
         
         
     }
     //************************HELPER FUNCTIONS AND CLASSES END*****************//
+    
+    
     
 }

@@ -2,6 +2,7 @@ package Email;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
+import javafx.scene.control.Alert;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -12,7 +13,7 @@ import javax.mail.internet.MimeMessage;
 
 public class TLSEmail {
 
-	public static void sendEmail(Session session, String toEmail, String subject, String body){
+	public static Boolean sendEmail(Session session, String toEmail, String subject, String body){
 		try
 	    {
 	      MimeMessage msg = new MimeMessage(session);
@@ -34,11 +35,12 @@ public class TLSEmail {
 	      msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail, false));
 
               Transport.send(msg);  
+              return true;
 
 	     // System.out.println("EMail Sent Successfully!!");
 	    }
 	    catch (UnsupportedEncodingException | MessagingException e) {
-	      e.printStackTrace();
+	    return false;
 	    }
 	}
 }

@@ -16,7 +16,7 @@ public class MainApp extends Application {
     public void start(Stage stage) {
         Parent root = null;
         try{
-            root = FXMLLoader.load(getClass().getResource("/fxml/main.fxml"));
+            root = FXMLLoader.load(getClass().getResource("/fxml/loginWindow.fxml"));
         }
         catch(Exception ex){
             ex.printStackTrace();
@@ -26,8 +26,15 @@ public class MainApp extends Application {
         Scene scene = new Scene(root);
         //scene.getStylesheets().add("/styles/addMember.css");
         
-        stage.setTitle("Visitor Management");
+        stage.setTitle("Visitor Management Login");
         stage.setScene(scene);
+        
+        //lets load databasae while loading the software main window so that next time user access database it will not take much time to load
+        databaseHandler.getInstance();
+        
+        //lets start preferred settings (username , password for now)
+        Preferences.initConfig();
+ 
         stage.show();
     }
 
