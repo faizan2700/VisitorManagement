@@ -39,4 +39,4 @@ password : admin
 
 12. Functionality to add and remove host
 13. Storing the record book for previously came visitors and not currently present
-14. 
+14. with few changes MySQL or PostgreSQL database can be implemented
