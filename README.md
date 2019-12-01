@@ -9,6 +9,12 @@ Visitor Management Software uses :
 
 Visitor Management Features : 
 
+You will be asked for username and password in beginning for administrator authentication (password is shaHex
+hashing for security puproses)
+
+username : admin
+password : admin
+
 (MVC Design Pattern)
 
 1. Email sending Using TLS authentication
@@ -30,3 +36,7 @@ Visitor Management Features :
 	present or current visitors are show in present visitor table
 10. Only one database object is used throughtout the whole application to avoid errors
 11. database implements methods for executing queries, actions to provide database access to other modules
+
+12. Functionality to add and remove host
+13. Storing the record book for previously came visitors and not currently present
+14. 
