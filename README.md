@@ -38,5 +38,5 @@ password : admin
 11. database implements methods for executing queries, actions to provide database access to other modules
 
 12. Functionality to add and remove host
-13. Storing the record book for previously came visitors and not currently present
+13. Storing the record for previously came visitors (other then currently present)
 14. with few changes MySQL or PostgreSQL database can be implemented
