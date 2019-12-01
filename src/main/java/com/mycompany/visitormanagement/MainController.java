@@ -7,6 +7,7 @@ package com.mycompany.visitormanagement;
 import Email.SimpleEmail;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
+import java.io.IOException;
 import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,16 +15,22 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
@@ -33,6 +40,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 /**
  * FXML Controller class
@@ -89,9 +97,6 @@ public class MainController implements Initializable {
     @FXML
     private StackPane stackpane;
     
-    
-    //list for filling table
-    
     @FXML
     private Tab visitorPane1;
 
@@ -116,11 +121,6 @@ public class MainController implements Initializable {
     @FXML
     private TableView<Visitor> tableView1;
     
-    databaseHandler databasehandler;
-    ObservableList<Visitor> list = FXCollections.observableArrayList();//this shows the list of current visitors
-    ObservableList<Visitor> list1 = FXCollections.observableArrayList();//this shows the record of previous visitor
-    String visitorCheckIn = null;
-    Visitor vis = null;
     @FXML
     private TableColumn<Visitor, String> nameCol1;
     @FXML
@@ -135,13 +135,36 @@ public class MainController implements Initializable {
     private TableColumn<Visitor, String> hostnameCol1;
     @FXML
     private TableColumn<Visitor, String> locationCol1;
+    @FXML
+    private MenuItem createnewhost;
+    @FXML
+    private MenuItem createnewadmin;
+    @FXML
+    private TableView<Host> hostTable;
+    @FXML
+    private TableColumn<Host, String> hostNameCol;
+    @FXML
+    private TableColumn<Host, String> hostPhoneCol;
+    @FXML
+    private TableColumn<Host, String> hostEmailCol;
 
+    
+    
+     databaseHandler databasehandler;
+    ObservableList<Visitor> list = FXCollections.observableArrayList();//this shows the list of current visitors
+    ObservableList<Visitor> list1 = FXCollections.observableArrayList();//this shows the record of previous visitor
+    ObservableList<Host> list2 = FXCollections.observableArrayList();//thie list shows the table of hosts present
+    String visitorCheckIn = null;
+    Visitor vis = null;
+    @FXML
+    private MenuItem removehost;
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         databasehandler = databaseHandler.getInstance();
-        inittable();
-        initRecord();
+        inittable();//current visitors table initiating
+        initRecord();//record of all visitors initiating
+        initHostTable();//record table of host is initiating
     }   
     
     //********************CONTROLLER FOR CHECK IN WINDOW ********************//
@@ -474,9 +497,9 @@ public class MainController implements Initializable {
         }
         
         catch(SQLException e){
-            e.printStackTrace();
             //Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE,null,e);
             //System.out.println("Error in fxmlcontroller loadData() method");
+            
         }
         tableView1.getItems().setAll(list1);
     }
@@ -489,15 +512,82 @@ public class MainController implements Initializable {
 
     //******************CONTROLLER FOR RECORD ENDS*****************//
     
+    //*****************CONTROLLER FOR HOST LIST*****************//
     
+    private void initHostTable(){
+        initCol2();
+        loadHostList();
+    }
+    
+    private void initCol2(){
+        hostNameCol.setCellValueFactory(new PropertyValueFactory("name"));
+        hostEmailCol.setCellValueFactory(new PropertyValueFactory("email"));
+        hostPhoneCol.setCellValueFactory(new PropertyValueFactory("phone"));
+    }
+    
+    private void loadHostList() {
+        
+        String qu = "SELECT * FROM HOST";
+        ResultSet rs = databasehandler.execQuery(qu);
+        list2.clear();
+        try{
+            while(rs.next()){
+                String name = rs.getString("name");
+                String phone = rs.getString("phone");
+                String email = rs.getString("email");
+                //System.out.println("for table " + email);
+                list2.add(new Host(name,phone,email));
+                //System.out.println("size of list is : " + list.size());
+            }
+        }
+        
+        catch(SQLException e){
+            //Logger.getLogger(FXMLController.class.getName()).log(Level.SEVERE,null,e);
+            //System.out.println("Error in fxmlcontroller loadData() method");
+        }
+        hostTable.getItems().setAll(list2);
+    }
+   
+    
+    public void addHostToList(Host host){
+        list2.add(host);
+        System.out.println(host);
+        if(hostTable==null) System.out.println("this is null");
+        else hostTable.getItems().setAll(list2);
+    }
+    
+    public  void removeHostFromList(Host host){
+        list2.remove(host);
+        hostTable.getItems().setAll(list2);
+    }
+    
+    //*****************CONTROLLER FOR HOST RECORD ENDED**************//
+    
+    //**************8 Menu Bar ***********************************//
+    
+    @FXML
+    private void CreateNewHost(ActionEvent event) {
+        String loc = "/fxml/CreateNewHost.fxml";
+        String title = "Add Host";
+        loadWindow(loc,title);
+    
+    }
+    @FXML
+    private void RemoveHost(ActionEvent event) {
+        String loc = "/fxml/RemoveHost.fxml";
+        String title = "Remove Host";
+        loadWindow(loc,title);
+    }
+
+    
+    //********************* Menubar ENDED***************//
+   
     //***************HELPER FUNCTIONS AND CLASSES********************//
 
     public static void sendEmailToHost(String visName,String visPhone, String visEmail, String host,String location){
         
         String body = "Hello " + host + ", \nIt is machine generated Mail to infom you about the visitor who just came to visit you below is the detailed"
                 + " Information. \nName : " + visName + "\nPhone : " + visPhone + " \nEmail : "  + visEmail + "\nWhere to visit : " + location + " \n";
-        
-        ;
         if(SimpleEmail.sendmail("syedfaizan824@gmail.com", "Visitor Inormation", body)){// success do nothing
 
         }
@@ -551,6 +641,22 @@ public class MainController implements Initializable {
         }
     }
     
+    void loadWindow(String loc,String title){
+
+        try {
+            Parent parent = FXMLLoader.load(getClass().getResource(loc));
+            Stage stage = new Stage(StageStyle.DECORATED);
+            stage.setTitle(title);
+            
+            Scene scene = new Scene(parent);
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException ex) {
+            Logger.getLogger(MainController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
+    
     public static void styleAlert(Alert alert) {
         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
 
@@ -558,6 +664,9 @@ public class MainController implements Initializable {
         dialogPane.getStylesheets().add(AlertMaker.class.getResource("/styles/darktheme.css").toExternalForm());
         dialogPane.getStyleClass().add("custom-alert");
     }
+
+
+
     public class Visitor{
         private final SimpleStringProperty name;
         private final SimpleStringProperty phone;
@@ -618,11 +727,35 @@ public class MainController implements Initializable {
         }
         public void setCheckout(String checkouttime){
             this.checkout = new SimpleStringProperty(checkouttime);
-            return;
         }
         
         
         
+    }
+    
+    
+    public class Host{
+        private final SimpleStringProperty name;
+        private final SimpleStringProperty phone;
+        private final SimpleStringProperty email;
+        
+        public Host(String name,String phone, String email){
+            this.name = new SimpleStringProperty(name);
+            this.phone = new SimpleStringProperty(phone);
+            this.email = new SimpleStringProperty(email);
+        }
+
+        public String getName() {
+            return name.get();
+        }
+
+        public String getPhone() {
+            return phone.get();
+        }
+
+        public String getEmail() {
+            return email.get();
+        }
     }
     //************************HELPER FUNCTIONS AND CLASSES END*****************//
     

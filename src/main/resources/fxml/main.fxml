@@ -26,6 +26,8 @@
                   <Menu fx:id="fileMenu" mnemonicParsing="false" text="File">
                      <items>
                         <MenuItem mnemonicParsing="false" text="Close" />
+                        <MenuItem fx:id="createnewhost" mnemonicParsing="false" onAction="#CreateNewHost" text="Add Host" />
+                        <MenuItem fx:id="removehost" mnemonicParsing="false" onAction="#RemoveHost" text="Remove Host" />
                      </items>
                   </Menu>
                   <Menu fx:id="editMenu" mnemonicParsing="false" text="Edit">
@@ -184,7 +186,25 @@
                         </AnchorPane>
                      </content>
                   </Tab>
-                  <Tab closable="false" text="Visitors List">
+                  <Tab closable="false" text="Host List">
+                     <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="547.0" prefWidth="963.0">
+                           <children>
+                              <TableView fx:id="hostTable" prefHeight="575.0" prefWidth="1088.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                 <columns>
+                                    <TableColumn fx:id="hostNameCol" prefWidth="75.0" text="Name" />
+                                    <TableColumn fx:id="hostPhoneCol" prefWidth="75.0" text="Phone" />
+                                    <TableColumn fx:id="hostEmailCol" prefWidth="75.0" text="Email" />
+                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                           </children>
+                        </AnchorPane>
+                     </content>
+                  </Tab>
+                  <Tab closable="false" text="Visitor Record">
                      <content>
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="547.0" prefWidth="963.0">
                            <children>

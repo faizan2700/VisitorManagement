@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXTextField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" styleClass="mainFxmlClass" stylesheets="@../styles/darktheme.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.visitormanagement.CreateNewHostController">
+   <children>
+      <VBox layoutX="307.0" layoutY="67.0" prefHeight="283.0" prefWidth="600.0" AnchorPane.bottomAnchor="117.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <JFXTextField fx:id="nameHost" labelFloat="true" promptText="Name">
+               <VBox.margin>
+                  <Insets bottom="20.0" left="20.0" right="20.0" top="40.0" />
+               </VBox.margin></JFXTextField>
+            <JFXTextField fx:id="phoneHost" labelFloat="true" promptText="Phone">
+               <VBox.margin>
+                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+               </VBox.margin></JFXTextField>
+            <JFXTextField fx:id="emailHost" labelFloat="true" promptText="Email">
+               <VBox.margin>
+                  <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+               </VBox.margin></JFXTextField>
+         </children>
+      </VBox>
+      <JFXButton fx:id="createButton" layoutX="115.0" layoutY="299.0" onAction="#handleCreateButton" prefHeight="51.0" prefWidth="100.0" text="Create" />
+      <JFXButton fx:id="cancelButton" layoutX="364.0" layoutY="299.0" onAction="#handleCancelButton" prefHeight="51.0" prefWidth="100.0" text="Cancel" />
+   </children>
+</AnchorPane>
